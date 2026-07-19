@@ -85,29 +85,7 @@ CryptoShell/
 
 ---
 
-## 🚀 Getting Started
 
-### Compile
-
-```bash
-g++ -std=c++17 -o cryptoshell cryptoshell.cpp
-```
-
-### Run
-
-Linux/macOS
-
-```bash
-./cryptoshell
-```
-
-Windows
-
-```bash
-cryptoshell.exe
-```
-
----
 
 ## 🧠 Skills Demonstrated
 
