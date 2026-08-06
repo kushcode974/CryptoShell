@@ -314,15 +314,31 @@ static std::string fromHex(const std::string& h){
     return b;
 }
 
-std::string encryptMsgWithPassword(const std::string& plain, const std::string& password){
-    std::string key = deriveKey(password);
+std::string encryptMsg(const std::string& plain){
+    std::string key = "CryptoShell_v4";
     return toHex(xorLayer(caesarLayer(plain, +1, key), key));
 }
 
-std::string decryptMsgWithPassword(const std::string& cipher, const std::string& password){
-    std::string key = deriveKey(password);
+std::string decryptMsg(const std::string& cipher){
+    std::string key = "CryptoShell_v4";
     std::string bin = fromHex(cipher);
+
     if(bin.empty()) return "__ERR__";
+
+    return caesarLayer(xorLayer(bin, key), -1, key);
+}
+
+std::string encryptMsgWithPassword(const std::string& plain, const std::string& /*password*/){
+    std::string key = "CryptoShell_v4";
+    return toHex(xorLayer(caesarLayer(plain, +1, key), key));
+}
+
+std::string decryptMsgWithPassword(const std::string& cipher, const std::string& /*password*/){
+    std::string key = "CryptoShell_v4";
+    std::string bin = fromHex(cipher);
+
+    if(bin.empty()) return "__ERR__";
+
     return caesarLayer(xorLayer(bin, key), -1, key);
 }
 
@@ -454,7 +470,7 @@ void displayOutputBox(const std::string& label, const std::string& data,
 
 void printBanner(bool compact = false){
     if(!compact){
-        std::cout << "\n" << TEAL << BOLD;
+       std::cout << "\n" << TEAL << BOLD;
 std::cout << " ==========================================================================================================\n";
 std::cout << "  ██████╗██████╗ ██╗   ██╗██████╗ ████████╗ ██████╗ ███████╗██╗  ██╗███████╗██╗     ██╗     \n";
 std::cout << " ██╔════╝██╔══██╗╚██╗ ██╔╝██╔══██╗╚══██╔══╝██╔═══██╗██╔════╝██║  ██║██╔════╝██║     ██║     \n";
@@ -508,15 +524,6 @@ void portableEncrypt(){
 
     flushCin();
 
-    std::cout << "  " << WHITE << BOLD << "  Enter password/key:\n" << RST;
-    std::cout << "  " << GREEN << "  -> " << RST;
-    std::string pwd = getHiddenInput();
-    if(pwd.size() < 4){
-        badgeErr("Password must be at least 4 characters.");
-        waitEnter();
-        return;
-    }
-
     std::cout << "\n  " << WHITE << BOLD << "  Enter message:\n" << RST;
     std::cout << "  " << GREEN << "  -> " << RST;
     std::string msg;
@@ -529,12 +536,11 @@ void portableEncrypt(){
     }
 
     progressBar("Encrypting message     ", 700);
-    std::string cipher = encryptMsgWithPassword(msg, pwd);
+      std::string cipher = encryptMsg(msg); 
 
     badgeOK("Encryption successful!");
     displayOutputBox("PORTABLE CIPHERTEXT", cipher, GOLD, GREEN);
     badgeInfo("Copy this ciphertext and keep it safe.");
-    badgeInfo("To decrypt later, use the same password.");
     waitEnter();
 }
 
@@ -543,15 +549,6 @@ void portableDecrypt(){
     sectionHeader("M", "PORTABLE DECRYPT", YELLOW);
 
     flushCin();
-
-    std::cout << "  " << WHITE << BOLD << "  Enter password/key:\n" << RST;
-    std::cout << "  " << YELLOW << "  -> " << RST;
-    std::string pwd = getHiddenInput();
-    if(pwd.size() < 4){
-        badgeErr("Password must be at least 4 characters.");
-        waitEnter();
-        return;
-    }
 
     std::cout << "\n  " << WHITE << BOLD << "  Paste ciphertext (hex):\n" << RST;
     std::cout << "  " << CYAN << "  -> " << RST;
@@ -569,7 +566,7 @@ void portableDecrypt(){
     }
 
     progressBar("Decrypting message     ", 700);
-    std::string plain = decryptMsgWithPassword(cleaned, pwd);
+     std::string plain = decryptMsg(cleaned);    
     if(plain == "__ERR__"){
         badgeErr("Invalid ciphertext or wrong input format.");
         waitEnter();
@@ -595,7 +592,7 @@ void portableMode(){
         boxMid(CYAN); boxEmpty(CYAN);
         boxLine(std::string(GREEN)+BOLD+"  [ 1 ]"+RST+"  "+LIME+"Encrypt Message"+RST+GRAY+"   -> copy ciphertext anywhere", CYAN);
         boxEmpty(CYAN);
-        boxLine(std::string(YELLOW)+BOLD+"  [ 2 ]"+RST+"  "+GOLD+"Decrypt Message"+RST+GRAY+"   -> use same password later", CYAN);
+        boxLine(std::string(YELLOW)+BOLD+"  [ 2 ]"+RST+"  "+GOLD+"Decrypt Message"+RST+GRAY+"   -> decrypt ciphertext", CYAN);
         boxEmpty(CYAN);
         boxLine(std::string(RED)+BOLD+"  [ 0 ]"+RST+"  "+RED+"Back to Mode Select", CYAN);
         boxEmpty(CYAN); boxBot(CYAN);
